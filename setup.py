@@ -27,7 +27,8 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Topic :: Scientific/Engineering'
     ],
-    description='Painlessly create beautiful default `matplotlib` plots.',
+    description='Convert RNA-STAR SJ.out.tab files to 5-prime and 3-prime '
+                '"percent spliced in" ("psi") scores.',
     long_description=LONG_DESCRIPTION,
     install_requires=['pandas>=0.13.1']
 )
