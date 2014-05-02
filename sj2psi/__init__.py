@@ -123,7 +123,7 @@ def get_psis(sj, min_unique=5, min_multimap=10):
     # Calculate psi scores as in Pervouchine et al, Bioinformatics (2013)
     # doi: 10.1093/bioinformatics/bts678
     sj['psi5'] = sj.groupby(['chrom', 'first_bp_intron'])[
-        'total_filtered_reads'].transform(lambda x: x / x.sum())
+        'total_filtered_reads'].transform(lambda x: x.astype(float) / x.sum())
     sj['psi3'] = sj.groupby(['chrom', 'last_bp_intron'])[
-        'total_filtered_reads'].transform(lambda x: x / x.sum())
+        'total_filtered_reads'].transform(lambda x: x.astype(float) / x.sum())
     return sj
