@@ -113,17 +113,26 @@ def get_psis(sj, min_unique=5, min_multimap=10):
     <BLANKLINE>
     [3 rows x 10 columns]
     """
-    sj['multimap_junction_reads_filtered'] = sj.multimap_junction_reads.map(
-        lambda x: x if x >= min_multimap else 0)
-    sj['unique_junction_reads_filtered'] = sj.unique_junction_reads.map(
-        lambda x: x if x >= min_unique else 0)
-    sj['total_filtered_reads'] = sj.multimap_junction_reads_filtered + \
-                                 sj.unique_junction_reads_filtered
+    sj['multimap_junction_reads_filtered'] = sj.multimap_junction_reads[
+        sj.multimap_junction_reads >= min_multimap]
+    sj['unique_junction_reads_filtered'] = sj.unique_junction_reads[
+        sj.unique_junction_reads >= min_unique]
+    sj['total_filtered_reads'] = sj.multimap_junction_reads_filtered.add(
+        sj.unique_junction_reads_filtered)
+    sj.total_filtered_reads = sj.total_filtered_reads.astype('float')
 
     # Calculate psi scores as in Pervouchine et al, Bioinformatics (2013)
     # doi: 10.1093/bioinformatics/bts678
-    sj['psi5'] = sj.groupby(['chrom', 'first_bp_intron'])[
-        'total_filtered_reads'].transform(lambda x: x.astype(float) / x.sum())
-    sj['psi3'] = sj.groupby(['chrom', 'last_bp_intron'])[
-        'total_filtered_reads'].transform(lambda x: x.astype(float) / x.sum())
+    psi5_groupby = ['chrom', 'first_bp_intron']
+    psi3_groupby = ['chrom', 'first_bp_intron']
+
+    groupbys = {'psi5': psi5_groupby, 'psi3': psi3_groupby}
+    for name, groupby in groupbys.iteritems():
+        denominator = '{}_denominator'.format(name)
+        s = sj.groupby(groupby).total_filtered_reads.sum()
+        s.name = denominator
+        sj.set_index(psi5_groupby, inplace=True)
+        sj = sj.join(s)
+        sj[name] = sj.total_filtered_reads / sj[denominator]
+
     return sj
