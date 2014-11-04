@@ -131,7 +131,7 @@ def get_psis(sj, min_unique=5, min_multimap=10):
         denominator = '{}_denominator'.format(name)
         s = sj.groupby(groupby).total_filtered_reads.sum()
         s.name = denominator
-        sj.set_index(psi5_groupby, inplace=True, drop=False)
+        sj.set_index(groupby, inplace=True, drop=False)
         sj = sj.join(s)
         sj[name] = sj.total_filtered_reads / sj[denominator]
 
