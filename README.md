@@ -35,13 +35,13 @@ for chr1:180 is 1.0, and psi5 for chr1:130 is 1.0 as well.
 
     >>> import pandas as pd
     >>> data = {'chrom': ['chr1', 'chr1', 'chr1'],
-    ... 'first_bp_intron':[100, 100, 130], 'last_bp_intron':[100, 200, 200],
+    ... 'first_bp_intron':[100, 100, 130], 'last_bp_intron':[180, 200, 200],
     ... 'unique_junction_reads':[90, 10, 40],
     ... 'multimap_junction_reads':[0, 0, 0]}
     >>> sj = pd.DataFrame(data)
-    >>> get_psis(sj)
+    >>> get_psis(sj, min_multimap=0)
       chrom  first_bp_intron  last_bp_intron  multimap_junction_reads  \
-    0  chr1              100             100                        0
+    0  chr1              100             180                        0
     1  chr1              100             200                        0
     2  chr1              130             200                        0
     <BLANKLINE>
