@@ -7,7 +7,26 @@ Annotation-free estimation of percent spliced in of a junction. This
 will convert [RNA-STAR aligner](http://bioinformatics.oxfordjournals
 .org/content/29/1/15.long) "SJ.out.tab" files to "Percent spliced-in"
 (Psi)
-scores.
+scores. Here's an example of an `SJ.out.tab` file:
+
+```
+chr1    30040   30563   1       1       1       0       131     45
+chr1    30668   30975   1       1       1       0       123     46
+chr1    146510  155766  2       2       1       50      92      46
+chr1    155832  694346  2       2       0       6       14      26
+chr1    317782  322037  1       1       1       0       2       3
+chr1    320939  321031  1       1       1       2       4       31
+chr1    322229  324287  1       1       1       0       3       21
+chr1    322229  324438  1       1       0       0       5       40
+chr1    324346  324438  1       1       1       0       2       13
+chr1    324711  325802  2       4       0       0       1       30
+chr1    663813  664904  2       4       0       0       1       38
+chr1    665185  667396  2       2       0       0       2       37
+chr1    665185  670802  2       2       0       0       4       40
+chr1    667588  682074  2       2       0       0       44      43
+chr1    668594  670802  2       2       0       0       4       40
+chr1    670994  682074  2       2       0       0       47      43
+```
 
 As described in [Pervouchine et al, Bioinformatics (2013)](http://bioinformatics.oxfordjournals.org/content/29/2/273.long), we will take the approach of asking,
 how often is this donor site (5' splice site) used with this acceptor
