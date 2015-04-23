@@ -134,5 +134,6 @@ def get_psis(sj, min_unique=5, min_multimap=10):
         sj.set_index(psi5_groupby, inplace=True)
         sj = sj.join(s)
         sj[name] = sj.total_filtered_reads / sj[denominator]
+        sj.reset_index(inplace=True)
 
     return sj
