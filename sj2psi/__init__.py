@@ -1,5 +1,7 @@
 import pandas as pd
 
+__version__ = '0.1.1'
+
 COLUMN_NAMES = ('chrom', 'first_bp_intron', 'last_bp_intron', 'strand',
                 'intron_motif', 'annotated',
                 'unique_junction_reads', 'multimap_junction_reads',
@@ -40,7 +42,7 @@ def read_sj_out_tab(filename):
         'multimap_junction_reads', 'max_overhang')
 
     """
-    sj = pd.read_table(filename, header=None, names=COLUMN_NAMES)
+    sj = pd.read_table(filename, header=None, names=COLUMN_NAMES, sep='\s+')
     sj.intron_motif = sj.intron_motif.map(int_to_intron_motif)
     sj.annotated = sj.annotated.astype(bool)
     return sj
@@ -151,13 +153,13 @@ def get_psis(sj, min_unique=5, min_multimap=10):
     psi3_groupby = ['chrom', 'last_bp_intron']
 
     groupbys = {'psi5': psi5_groupby, 'psi3': psi3_groupby}
-    for name, groupby in groupbys.iteritems():
+    for name, groupby in groupbys.items():
         denominator = '{}_denominator'.format(name)
         s = sj.groupby(groupby).total_filtered_reads.sum()
         s.name = denominator
         sj.set_index(groupby, inplace=True, drop=False)
         sj = sj.join(s)
         sj[name] = sj.total_filtered_reads / sj[denominator]
-        sj.reset_index(inplace=True)
+        sj.reset_index(inplace=True, drop=True)
 
     return sj
