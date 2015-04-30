@@ -1,5 +1,7 @@
 sj2psi
-==============
+======
+
+[[![Build Status](https://travis-ci.org/olgabot/sj2psi.svg)](https://travis-ci.org/olgabot/sj2psi)](https://travis-ci.org/olgabot/sj2psi)
 
 DOI: 10.5281/zenodo.9885
 
