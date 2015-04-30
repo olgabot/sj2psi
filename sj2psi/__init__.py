@@ -39,7 +39,7 @@ def read_sj_out_tab(filename):
     """
     sj = pd.read_table(filename, header=None, names=COLUMN_NAMES)
     sj.intron_motif = sj.intron_motif.map(int_to_intron_motif)
-    sj.annotated = sj.annotated.map(bool)
+    sj.annotated = sj.annotated.astype(bool)
     return sj
 
 def chr_start_stop_to_sj_ind(chr_start_stop, sj):
