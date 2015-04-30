@@ -34,7 +34,10 @@ def read_sj_out_tab(filename):
     Returns
     -------
     sj : pandas.DataFrame
-        Dataframe of splice junctions
+        Dataframe of splice junctions with the columns,
+        ('chrom', 'first_bp_intron', 'last_bp_intron', 'strand',
+        'intron_motif', 'annotated', 'unique_junction_reads',
+        'multimap_junction_reads', 'max_overhang')
 
     """
     sj = pd.read_table(filename, header=None, names=COLUMN_NAMES)
@@ -60,7 +63,8 @@ def chr_start_stop_to_sj_ind(chr_start_stop, sj):
     """
     chrom, startstop = chr_start_stop.replace(',', '').split(':')
     start, stop = map(int, startstop.split('-'))
-    return (sj.chrom == chrom) & (start < sj.first_bp_intron) & (sj.last_bp_intron < stop)
+    return (sj.chrom == chrom) & (start < sj.first_bp_intron) \
+           & (sj.last_bp_intron < stop)
 
 def get_psis(sj, min_unique=5, min_multimap=10):
     """Calculate Percent spliced-in (Psi) scores of each junction
@@ -89,6 +93,25 @@ def get_psis(sj, min_unique=5, min_multimap=10):
     What's left is the uninteresting splice sites of chr1:180 and chr1:130,
     both of which didn't have any variance and were always used. Thus psi3
     for chr1:180 is 1.0, and psi5 for chr1:130 is 1.0 as well.
+
+    Parameters
+    ----------
+    sj : pandas.DataFrame
+        A splice junction dataframe as created by read_sj_out_tab, specifically
+        with the columns,
+        ('chrom', 'first_bp_intron', 'last_bp_intron', 'strand',
+        'intron_motif', 'annotated', 'unique_junction_reads',
+        'multimap_junction_reads', 'max_overhang')
+    min_unique : int, optional
+        Minimum number of unique reads per junction. Default 5.
+    min_multimap : int, optional
+        Minimum number of multimapping reads per junction. Default 10
+
+    Returns
+    -------
+    sj_with_psi : pandas.DataFrame
+        The original dataframe, now with the columns psi5 and psi3 for
+        percent spliced-in scores of each junction.
 
     >>> import pandas as pd
     >>> data = {'chrom': ['chr1', 'chr1', 'chr1'],
