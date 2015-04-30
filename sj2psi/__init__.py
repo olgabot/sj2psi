@@ -5,6 +5,23 @@ COLUMN_NAMES = ('chrom', 'first_bp_intron', 'last_bp_intron', 'strand',
                 'unique_junction_reads', 'multimap_junction_reads',
                 'max_overhang')
 
+
+def int_to_intron_motif(n):
+    if n == 0:
+        return 'non-canonical'
+    if n == 1:
+        return 'GT/AG'
+    if n == 2:
+        return 'CT/AC'
+    if n == 3:
+        return 'GC/AG'
+    if n == 4:
+        return 'CT/GC'
+    if n == 5:
+        return 'AT/AC'
+    if n == 6:
+        return 'GT/AT'
+
 def read_sj_out_tab(filename):
     """Read an SJ.out.tab file as produced by the RNA-STAR aligner into a
     pandas Dataframe
@@ -20,22 +37,6 @@ def read_sj_out_tab(filename):
         Dataframe of splice junctions
 
     """
-    def int_to_intron_motif(n):
-        if n == 0:
-            return 'non-canonical'
-        if n == 1:
-            return 'GT/AG'
-        if n == 2:
-            return 'CT/AC'
-        if n == 3:
-            return 'GC/AG'
-        if n == 4:
-            return 'CT/GC'
-        if n == 5:
-            return 'AT/AC'
-        if n == 6:
-            return 'GT/AT'
-
     sj = pd.read_table(filename, header=None, names=COLUMN_NAMES)
     sj.intron_motif = sj.intron_motif.map(int_to_intron_motif)
     sj.annotated = sj.annotated.map(bool)
