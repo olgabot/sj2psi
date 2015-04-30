@@ -1,8 +1,8 @@
-
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 from StringIO import StringIO
+
 
 @pytest.fixture
 def example_sj_out_tab(tmpdir):
@@ -24,25 +24,25 @@ chr1    668587  671992  1       1       0       0       4       28
     df.to_csv(filename, index=False, header=False, sep='\t')
     return filename
 
+
 @pytest.fixture(params=['chr1:146000-655000',
                         pytest.mark.xfail('chr2:146000-655000')])
 def chr_start_stop(request):
     return request.param
 
-@pytest.fixture(params=[(0, 'non-canonical'),
-    (1, 'GT/AG'),
-    (2, 'CT/AC'),
-    (3, 'GC/AG'),
-    (4, 'CT/GC'),
-    (5, 'AT/AC'),
-    (6, 'GT/AT'),])
+
+@pytest.fixture(params=[(0, 'non-canonical'), (1, 'GT/AG'), (2, 'CT/AC'),
+                        (3, 'GC/AG'), (4, 'CT/GC'), (5, 'AT/AC'),
+                        (6, 'GT/AT')])
 def int_motif(request):
     return request.param
+
 
 def test_int_to_intron_motif(int_motif):
     from sj2psi import int_to_intron_motif
     n, motif = int_motif
     pdt.assert_equal(int_to_intron_motif(n), motif)
+
 
 def test_read_sj_out_tab(example_sj_out_tab):
     from sj2psi import read_sj_out_tab, COLUMN_NAMES, int_to_intron_motif
@@ -57,18 +57,22 @@ def test_read_sj_out_tab(example_sj_out_tab):
 
     pdt.assert_frame_equal(test_output, true_output)
 
+
 @pytest.fixture(params=[None, 10])
 def min_unique(request):
     return request.param
+
 
 @pytest.fixture(params=[None, 20])
 def min_multimap(request):
     return request.param
 
+
 @pytest.fixture
 def sj(example_sj_out_tab):
     from sj2psi import read_sj_out_tab
     return read_sj_out_tab(example_sj_out_tab)
+
 
 def test_get_psis(sj, min_multimap, min_unique):
     from sj2psi import get_psis
@@ -78,15 +82,19 @@ def test_get_psis(sj, min_multimap, min_unique):
     kwargs['min_multimap'] = 10 if min_multimap is None else min_multimap
 
     test_output = get_psis(sj.copy(), **kwargs)
-    
+
     true_output = sj.copy()
-    true_output['multimap_junction_reads_filtered'] = true_output.multimap_junction_reads[
-        true_output.multimap_junction_reads >= kwargs['min_multimap']]
-    true_output['unique_junction_reads_filtered'] = true_output.unique_junction_reads[
-        true_output.unique_junction_reads >= kwargs['min_unique']]
-    true_output['total_filtered_reads'] = true_output.multimap_junction_reads_filtered.add(
-        true_output.unique_junction_reads_filtered)
-    true_output.total_filtered_reads = true_output.total_filtered_reads.astype('float')
+    true_output['multimap_junction_reads_filtered'] = \
+        true_output.multimap_junction_reads[
+            true_output.multimap_junction_reads >= kwargs['min_multimap']]
+    true_output['unique_junction_reads_filtered'] = \
+        true_output.unique_junction_reads[
+            true_output.unique_junction_reads >= kwargs['min_unique']]
+    true_output['total_filtered_reads'] = \
+        true_output.multimap_junction_reads_filtered.add(
+            true_output.unique_junction_reads_filtered)
+    true_output.total_filtered_reads = \
+        true_output.total_filtered_reads.astype('float')
 
     # Calculate psi scores as in Pervouchine et al, Bioinformatics (2013)
     # doi: 10.1093/bioinformatics/bts678
@@ -100,9 +108,11 @@ def test_get_psis(sj, min_multimap, min_unique):
         s.name = denominator
         true_output.set_index(groupby, inplace=True, drop=False)
         true_output = true_output.join(s)
-        true_output[name] = true_output.total_filtered_reads / true_output[denominator]
+        true_output[name] = true_output.total_filtered_reads \
+            / true_output[denominator]
         true_output.reset_index(inplace=True, drop=True)
     pdt.assert_frame_equal(test_output, true_output)
+
 
 def test_chr_start_stop_to_sj_ind(chr_start_stop, sj):
     from sj2psi import chr_start_stop_to_sj_ind
@@ -111,5 +121,5 @@ def test_chr_start_stop_to_sj_ind(chr_start_stop, sj):
     chrom, startstop = chr_start_stop.replace(',', '').split(':')
     start, stop = map(int, startstop.split('-'))
     true_output = (sj.chrom == chrom) & (start < sj.first_bp_intron) \
-                  & (sj.last_bp_intron < stop)
+        & (sj.last_bp_intron < stop)
     pdt.assert_array_equal(test_output, true_output)
