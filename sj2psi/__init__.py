@@ -24,6 +24,7 @@ def int_to_intron_motif(n):
     if n == 6:
         return 'GT/AT'
 
+
 def read_sj_out_tab(filename):
     """Read an SJ.out.tab file as produced by the RNA-STAR aligner into a
     pandas Dataframe
@@ -47,6 +48,7 @@ def read_sj_out_tab(filename):
     sj.annotated = sj.annotated.astype(bool)
     return sj
 
+
 def chr_start_stop_to_sj_ind(chr_start_stop, sj):
     """Transform a 'chr1:100-200' string into index range of sj dataframe
 
@@ -66,7 +68,8 @@ def chr_start_stop_to_sj_ind(chr_start_stop, sj):
     chrom, startstop = chr_start_stop.replace(',', '').split(':')
     start, stop = map(int, startstop.split('-'))
     return (sj.chrom == chrom) & (start < sj.first_bp_intron) \
-           & (sj.last_bp_intron < stop)
+        & (sj.last_bp_intron < stop)
+
 
 def get_psis(sj, min_unique=5, min_multimap=10):
     """Calculate Percent spliced-in (Psi) scores of each junction
