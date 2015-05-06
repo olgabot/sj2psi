@@ -24,7 +24,7 @@ chr1    661725  662046  2       4       0       0       1       22
 chr1    668587  671992  1       1       0       0       4       28
 """
     df = pd.read_table(StringIO(s), header=None, sep='\s+')
-    filename = '{}/SJ.out.tab'.format(tmpdir)
+    filename = '{0}/SJ.out.tab'.format(tmpdir)
     df.to_csv(filename, index=False, header=False, sep='\t')
     return filename
 
@@ -107,7 +107,7 @@ def test_get_psis(sj, min_multimap, min_unique):
 
     groupbys = {'psi5': psi5_groupby, 'psi3': psi3_groupby}
     for name, groupby in groupbys.items():
-        denominator = '{}_denominator'.format(name)
+        denominator = '{0}_denominator'.format(name)
         s = true_output.groupby(groupby).total_filtered_reads.sum()
         s.name = denominator
         true_output.set_index(groupby, inplace=True, drop=False)
