@@ -2,7 +2,7 @@ test:
 	py.test
 
 coverage:
-	py.test --cov sj2psi
+	py.test --cov sj2psi --cov-report term-missing sj2psi/test
 
 lint:
 	pyflakes sj2psi
