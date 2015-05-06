@@ -157,7 +157,7 @@ def get_psis(sj, min_unique=5, min_multimap=10):
 
     groupbys = {'psi5': psi5_groupby, 'psi3': psi3_groupby}
     for name, groupby in groupbys.items():
-        denominator = '{}_denominator'.format(name)
+        denominator = '{0}_denominator'.format(name)
         s = sj.groupby(groupby).total_filtered_reads.sum()
         s.name = denominator
         sj.set_index(groupby, inplace=True, drop=False)
