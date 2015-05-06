@@ -3,6 +3,9 @@ import sys
 from setuptools import setup
 from setuptools import find_packages
 
+import sj2psi
+
+VERSION = sj2psi.__version__
 
 if sys.version_info[0] == 3:
     LONG_DESCRIPTION = open('README', encoding='utf-8').read()
@@ -11,7 +14,7 @@ else:
 
 setup(
     name='sj2psi',
-    version='0.0.1',
+    version=VERSION,
     author='Olga B. Botvinnik',
     author_email='olga.botvinnik@gmail.com',
     packages=find_packages(),

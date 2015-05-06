@@ -1,9 +1,29 @@
 import pandas as pd
 
+__version__ = '0.1.1'
+
 COLUMN_NAMES = ('chrom', 'first_bp_intron', 'last_bp_intron', 'strand',
                 'intron_motif', 'annotated',
                 'unique_junction_reads', 'multimap_junction_reads',
                 'max_overhang')
+
+
+def int_to_intron_motif(n):
+    if n == 0:
+        return 'non-canonical'
+    if n == 1:
+        return 'GT/AG'
+    if n == 2:
+        return 'CT/AC'
+    if n == 3:
+        return 'GC/AG'
+    if n == 4:
+        return 'CT/GC'
+    if n == 5:
+        return 'AT/AC'
+    if n == 6:
+        return 'GT/AT'
+
 
 def read_sj_out_tab(filename):
     """Read an SJ.out.tab file as produced by the RNA-STAR aligner into a
@@ -17,29 +37,17 @@ def read_sj_out_tab(filename):
     Returns
     -------
     sj : pandas.DataFrame
-        Dataframe of splice junctions
+        Dataframe of splice junctions with the columns,
+        ('chrom', 'first_bp_intron', 'last_bp_intron', 'strand',
+        'intron_motif', 'annotated', 'unique_junction_reads',
+        'multimap_junction_reads', 'max_overhang')
 
     """
-    def int_to_intron_motif(n):
-        if n == 0:
-            return 'non-canonical'
-        if n == 1:
-            return 'GT/AG'
-        if n == 2:
-            return 'CT/AC'
-        if n == 3:
-            return 'GC/AG'
-        if n == 4:
-            return 'CT/GC'
-        if n == 5:
-            return 'AT/AC'
-        if n == 6:
-            return 'GT/AT'
-
-    sj = pd.read_table(filename, header=None, names=COLUMN_NAMES)
+    sj = pd.read_table(filename, header=None, names=COLUMN_NAMES, sep='\s+')
     sj.intron_motif = sj.intron_motif.map(int_to_intron_motif)
-    sj.annotated = sj.annotated.map(bool)
+    sj.annotated = sj.annotated.astype(bool)
     return sj
+
 
 def chr_start_stop_to_sj_ind(chr_start_stop, sj):
     """Transform a 'chr1:100-200' string into index range of sj dataframe
@@ -59,7 +67,9 @@ def chr_start_stop_to_sj_ind(chr_start_stop, sj):
     """
     chrom, startstop = chr_start_stop.replace(',', '').split(':')
     start, stop = map(int, startstop.split('-'))
-    return (sj.chrom == chrom) & (start < sj.first_bp_intron) & (sj.last_bp_intron < stop)
+    return (sj.chrom == chrom) & (start < sj.first_bp_intron) \
+        & (sj.last_bp_intron < stop)
+
 
 def get_psis(sj, min_unique=5, min_multimap=10):
     """Calculate Percent spliced-in (Psi) scores of each junction
@@ -88,6 +98,25 @@ def get_psis(sj, min_unique=5, min_multimap=10):
     What's left is the uninteresting splice sites of chr1:180 and chr1:130,
     both of which didn't have any variance and were always used. Thus psi3
     for chr1:180 is 1.0, and psi5 for chr1:130 is 1.0 as well.
+
+    Parameters
+    ----------
+    sj : pandas.DataFrame
+        A splice junction dataframe as created by read_sj_out_tab, specifically
+        with the columns,
+        ('chrom', 'first_bp_intron', 'last_bp_intron', 'strand',
+        'intron_motif', 'annotated', 'unique_junction_reads',
+        'multimap_junction_reads', 'max_overhang')
+    min_unique : int, optional
+        Minimum number of unique reads per junction. Default 5.
+    min_multimap : int, optional
+        Minimum number of multimapping reads per junction. Default 10
+
+    Returns
+    -------
+    sj_with_psi : pandas.DataFrame
+        The original dataframe, now with the columns psi5 and psi3 for
+        percent spliced-in scores of each junction.
 
     >>> import pandas as pd
     >>> data = {'chrom': ['chr1', 'chr1', 'chr1'],
@@ -127,13 +156,13 @@ def get_psis(sj, min_unique=5, min_multimap=10):
     psi3_groupby = ['chrom', 'last_bp_intron']
 
     groupbys = {'psi5': psi5_groupby, 'psi3': psi3_groupby}
-    for name, groupby in groupbys.iteritems():
-        denominator = '{}_denominator'.format(name)
+    for name, groupby in groupbys.items():
+        denominator = '{0}_denominator'.format(name)
         s = sj.groupby(groupby).total_filtered_reads.sum()
         s.name = denominator
         sj.set_index(groupby, inplace=True, drop=False)
         sj = sj.join(s)
         sj[name] = sj.total_filtered_reads / sj[denominator]
-        sj.reset_index(inplace=True)
+        sj.reset_index(inplace=True, drop=True)
 
     return sj
