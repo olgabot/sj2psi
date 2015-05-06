@@ -106,7 +106,7 @@ def test_get_psis(sj, min_multimap, min_unique):
     psi3_groupby = ['chrom', 'last_bp_intron']
 
     groupbys = {'psi5': psi5_groupby, 'psi3': psi3_groupby}
-    for name, groupby in groupbys.iteritems():
+    for name, groupby in groupbys.items():
         denominator = '{}_denominator'.format(name)
         s = true_output.groupby(groupby).total_filtered_reads.sum()
         s.name = denominator
