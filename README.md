@@ -7,8 +7,7 @@ sj2psi
 DOI: 10.5281/zenodo.9885
 
 Annotation-free estimation of percent spliced in of a junction. This
-will convert [RNA-STAR aligner](http://bioinformatics.oxfordjournals
-.org/content/29/1/15.long) "SJ.out.tab" files to "Percent spliced-in"
+will convert [RNA-STAR aligner](http://bioinformatics.oxfordjournals.org/content/29/1/15.long) "SJ.out.tab" files to "Percent spliced-in"
 (Psi)
 scores. Here's an example of an `SJ.out.tab` file:
 
