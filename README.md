@@ -1,8 +1,7 @@
 sj2psi
 ======
 
-[[![Build Status](https://travis-ci.org/olgabot/sj2psi.svg)](https://travis-ci.org/olgabot/sj2psi)](https://travis-ci.org/olgabot/sj2psi)[[![Coverage Status](https://coveralls.io/repos/olgabot/sj2psi/badge.svg)](https://coveralls.io/r/olgabot/sj2psi)
-](https://coveralls.io/r/olgabot/sj2psi)
+[[![Build Status](https://travis-ci.org/olgabot/sj2psi.svg)](https://travis-ci.org/olgabot/sj2psi)](https://travis-ci.org/olgabot/sj2psi)[![Coverage Status](https://coveralls.io/repos/olgabot/sj2psi/badge.svg?branch=master)](https://coveralls.io/r/olgabot/sj2psi?branch=master)
 
 DOI: 10.5281/zenodo.9885
 
