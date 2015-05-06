@@ -1,7 +1,11 @@
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
-from StringIO import StringIO
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 @pytest.fixture
