@@ -23,6 +23,7 @@ install:
   # install as much as we can via conda
   - conda install --yes pandas pytest
   - pip install -r requirements.txt
+  - pip install .
 
 before_script:
   - git config --global user.email "olga.botvinnik@gmail.com"
