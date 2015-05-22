@@ -30,6 +30,7 @@ script:
 - make coverage
 - make lint
 - make pep8
+- coverage debug sys
 after_script:
 - coveralls
 deploy:
