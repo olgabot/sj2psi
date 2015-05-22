@@ -1,6 +1,6 @@
 import pandas as pd
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 COLUMN_NAMES = ('chrom', 'first_bp_intron', 'last_bp_intron', 'strand',
                 'intron_motif', 'annotated',
