@@ -2,5 +2,5 @@ pandas>=0.13.1
 pytest
 pyflakes
 pep8
-pytest-cov
+coverage
 python-coveralls
