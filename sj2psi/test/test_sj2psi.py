@@ -82,7 +82,7 @@ def test_get_psis(sj, min_multimap, min_unique):
     from sj2psi import get_psis
 
     kwargs = {}
-    kwargs['min_unique'] = 10 if min_unique is None else min_unique
+    kwargs['min_unique'] = 5 if min_unique is None else min_unique
     kwargs['min_multimap'] = 10 if min_multimap is None else min_multimap
 
     test_output = get_psis(sj.copy(), **kwargs)
