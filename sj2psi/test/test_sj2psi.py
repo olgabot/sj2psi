@@ -102,8 +102,8 @@ def test_get_psis(sj, min_multimap, min_unique):
 
     # Calculate psi scores as in Pervouchine et al, Bioinformatics (2013)
     # doi: 10.1093/bioinformatics/bts678
-    psi5_groupby = ['chrom', 'first_bp_intron']
-    psi3_groupby = ['chrom', 'last_bp_intron']
+    psi5_groupby = ['chrom', 'intron_start']
+    psi3_groupby = ['chrom', 'intron_stop']
 
     groupbys = {'psi5': psi5_groupby, 'psi3': psi3_groupby}
     for name, groupby in groupbys.items():
