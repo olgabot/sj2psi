@@ -19,7 +19,7 @@ setup(
     author_email='olga.botvinnik@gmail.com',
     packages=find_packages(),
     license='MIT License',
-    url='http://olgabot.github.io/prettyplotlib',
+    url='http://github.com/olgabot/sj2psi',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
