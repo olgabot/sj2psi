@@ -1,8 +1,8 @@
 import pandas as pd
 
-__version__ = '0.1.2'
+__version__ = '0.2.2'
 
-COLUMN_NAMES = ('chrom', 'first_bp_intron', 'last_bp_intron', 'strand',
+COLUMN_NAMES = ('chrom', 'intron_start', 'intron_stop', 'strand',
                 'intron_motif', 'annotated',
                 'unique_junction_reads', 'multimap_junction_reads',
                 'max_overhang')
@@ -120,7 +120,7 @@ def get_psis(sj, min_unique=5, min_multimap=10):
 
     >>> import pandas as pd
     >>> data = {'chrom': ['chr1', 'chr1', 'chr1'],
-    ... 'first_bp_intron':[100, 100, 130], 'last_bp_intron':[100, 200, 200],
+    ... 'intron_start':[100, 100, 130], 'intron_stop':[100, 200, 200],
     ... 'unique_junction_reads':[90, 10, 40],
     ... 'multimap_junction_reads':[0, 0, 0]}
     >>> sj = pd.DataFrame(data)
@@ -152,8 +152,8 @@ def get_psis(sj, min_unique=5, min_multimap=10):
 
     # Calculate psi scores as in Pervouchine et al, Bioinformatics (2013)
     # doi: 10.1093/bioinformatics/bts678
-    psi5_groupby = ['chrom', 'first_bp_intron']
-    psi3_groupby = ['chrom', 'last_bp_intron']
+    psi5_groupby = ['chrom', 'intron_start']
+    psi3_groupby = ['chrom', 'intron_stop']
 
     groupbys = {'psi5': psi5_groupby, 'psi3': psi3_groupby}
     for name, groupby in groupbys.items():
