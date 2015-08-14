@@ -38,7 +38,7 @@ def read_sj_out_tab(filename):
     -------
     sj : pandas.DataFrame
         Dataframe of splice junctions with the columns,
-        ('chrom', 'intron_start', 'intron_stop', 'strand',
+        ('chrom', 'intron_start', 'last_bp_intron', 'strand',
         'intron_motif', 'annotated', 'unique_junction_reads',
         'multimap_junction_reads', 'max_overhang')
 
@@ -68,7 +68,7 @@ def chr_start_stop_to_sj_ind(chr_start_stop, sj):
     chrom, startstop = chr_start_stop.replace(',', '').split(':')
     start, stop = map(int, startstop.split('-'))
     return (sj.chrom == chrom) & (start < sj.intron_start) \
-        & (sj.intron_stop < stop)
+        & (sj.last_bp_intron < stop)
 
 
 def get_psis(sj, min_unique=5, min_multimap=10):
@@ -104,7 +104,7 @@ def get_psis(sj, min_unique=5, min_multimap=10):
     sj : pandas.DataFrame
         A splice junction dataframe as created by read_sj_out_tab, specifically
         with the columns,
-        ('chrom', 'intron_start', 'intron_stop', 'strand',
+        ('chrom', 'intron_start', 'last_bp_intron', 'strand',
         'intron_motif', 'annotated', 'unique_junction_reads',
         'multimap_junction_reads', 'max_overhang')
     min_unique : int, optional
@@ -125,7 +125,7 @@ def get_psis(sj, min_unique=5, min_multimap=10):
     ... 'multimap_junction_reads':[0, 0, 0]}
     >>> sj = pd.DataFrame(data)
     >>> get_psis(sj) # doctest: +NORMALIZE_WHITESPACE
-      chrom  intron_start  intron_stop  multimap_junction_reads  \\
+      chrom  intron_start  last_bp_intron  multimap_junction_reads  \\
     0  chr1              100             100                        0
     1  chr1              100             200                        0
     2  chr1              130             200                        0
