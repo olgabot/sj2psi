@@ -124,6 +124,6 @@ def test_chr_start_stop_to_sj_ind(chr_start_stop, sj):
 
     chrom, startstop = chr_start_stop.replace(',', '').split(':')
     start, stop = map(int, startstop.split('-'))
-    true_output = (sj.chrom == chrom) & (start < sj.first_bp_intron) \
-        & (sj.last_bp_intron < stop)
+    true_output = (sj.chrom == chrom) & (start < sj.intron_start) \
+        & (sj.intron_stop < stop)
     pdt.assert_array_equal(test_output, true_output)

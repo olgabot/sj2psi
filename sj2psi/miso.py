@@ -1,5 +1,3 @@
-import sj2psi
-import glob
 
 MINIMUM_READS = 10
 
