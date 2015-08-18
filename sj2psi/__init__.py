@@ -92,6 +92,118 @@ def chr_start_stop_to_sj_ind(chr_start_stop, sj):
     return (sj.chrom == chrom) & (start < sj.intron_start) \
         & (sj.intron_stop < stop)
 
+def _full_index(sample_id_col):
+    """Return all columns necessary to uniquely specify a junction"""
+    return [sample_id_col, 'chrom', 'intron_start', 'intron_stop', 'strand']
+
+
+def add_possible_donors_acceptors(sj, sample_id_col='sample_id',
+                                  reads_col='total_junction_reads'):
+    """Add other observed end (start) sites for shared junction starts (ends)
+
+    For samples that share a donor (acceptor), add the acceptor (donor) to
+    other samples, with zero reads. This ***explicitly*** adds all possible
+    `donor, acceptor` pairs to each sample, so the other samples will properly
+    get $\Psi$ scores of 1 for the `donor, acceptor` pairs they have not seen.
+
+    **From:**
+
+        Sample 1:
+        chr1:100-200: 25 reads
+        [   ]-------------[   ]
+        Sample 2:
+        chr1:100:250: 40 reads
+        [   ]----------------------[    ]
+
+    **To:**
+
+        Sample 1:
+        chr1:100-200: 25 reads
+        [   ]-------------[   ]
+        chr1:100:250: 0 reads
+        [   ]----------------------[    ]
+        Sample 2:
+        chr1:100-200: 0 reads
+        [   ]-------------[   ]
+        chr1:100:250: 40 reads
+        [   ]----------------------[    ]
+
+    A one-line summary that does not use variable names or the
+    function name.
+
+    Several sentences providing an extended description. Refer to
+    variables using back-ticks, e.g. `var`.
+
+    Parameters
+    ----------
+    sj : pandas.DataFrame
+        A table of splice junctions, with the required column names:
+        "chrom", "intron_start", "intron_stop", "strand" and the
+        `sample_id_col` and `reads_col` specified below
+    sample_id_col : str, optional
+        Name of the column containing sample ids. Default: "sample_id"
+    reads_col : str, optional
+        Name of the column containing read counts.
+        Default: "total_junction_reads"
+
+    Returns
+    -------
+    sj_appended : pandas.DataFrame
+        A table of splice junctions with all observed splicing donor and
+        acceptors for each sample in the dataset
+
+    Note
+    ----
+    This function takes a long time and will use a lot of memory. Please plan
+    accordingly.
+    """
+    dfs = []
+
+    full_index = _full_index(sample_id_col)
+
+    for intron in ('intron_start', 'intron_stop'):
+        for name, df in sj.groupby(['chrom', intron, 'strand']):
+            df = df.set_index(full_index)
+            df = df[reads_col].unstack(
+                [sample_id_col, 'chrom', intron, 'strand'])
+            df = df.fillna(0)
+            df = df.stack(
+                [sample_id_col, 'chrom', intron, 'strand'])
+            df = df.reset_index()
+            df = df.sort(sample_id_col)
+            df = df.rename(columns={0: reads_col})
+            dfs.append(df)
+    sj_appended = pd.concat(dfs, ignore_index=True)
+
+    # Observed junctions appear twice, so remove them
+    sj_appended = sj_appended.drop_duplicates()
+
+    # Reorder columns
+    sj_appended = sj_appended.reindex(columns=full_index + [reads_col])
+
+    # Sort by sample id, chrom, start, stop, strand
+    sj_appended = sj_appended.sort(full_index)
+    return sj_appended
+
+
+def calculate_psis(sj, sample_id_col='sample_id', reads_col='total_junction_reads'):
+    splice_sites = {r'$\Psi_5$': 'intron_start', r'$\Psi_3$': 'intron_stop'}
+
+    full_index = _full_index(sample_id_col)
+
+    for psi, ss in splice_sites.items():
+        sj = sj.sort(full_index)
+        groupby = ['sample_id', 'chrom', ss, 'strand']
+        reads = sj.groupby(groupby)[reads_col].sum()
+        reads.name = reads_col
+
+        # sort_index() is necessary for the rows of sj_appended
+        # to be exactly the right order and match with psi_scores
+        sj = sj.set_index(groupby).sort_index()
+        psi_scores = sj[reads_col].divide(reads).fillna(0)
+        sj[psi] = psi_scores.values
+        sj = sj.reset_index()
+    return sj
 
 def get_psis(sj, min_unique=5, min_multimap=10):
     """Calculate Percent spliced-in (Psi) scores of each junction
