@@ -186,7 +186,31 @@ def add_possible_donors_acceptors(sj, sample_id_col='sample_id',
     return sj_appended
 
 
-def calculate_psis(sj, sample_id_col='sample_id', reads_col='total_junction_reads'):
+def calculate_psis(sj, sample_id_col='sample_id',
+                   reads_col='total_junction_reads'):
+    """Get percent spliced-in (psi) scores for 3' and 5' splice sites
+
+    This method of getting psi scores is 5x faster than using
+    `lambda x: x/x.sum()`
+
+    Parameters
+    ----------
+    sj : pandas.DataFrame
+        A table of splice junctions, with the required column names:
+        "chrom", "intron_start", "intron_stop", "strand" and the
+        `sample_id_col` and `reads_col` specified below
+    sample_id_col : str, optional
+        Name of the column containing sample ids. Default: "sample_id"
+    reads_col : str, optional
+        Name of the column containing read counts.
+        Default: "total_junction_reads"
+
+    Returns
+    -------
+    sj_psis : pandas.DataFrame
+        A table of splice junctions with Psi scores calculated for both 3'
+        and 5' splice sites
+    """
     splice_sites = {r'$\Psi_5$': 'intron_start', r'$\Psi_3$': 'intron_stop'}
 
     full_index = _full_index(sample_id_col)
@@ -204,6 +228,7 @@ def calculate_psis(sj, sample_id_col='sample_id', reads_col='total_junction_read
         sj[psi] = psi_scores.values
         sj = sj.reset_index()
     return sj
+
 
 def get_psis(sj, min_unique=5, min_multimap=10):
     """Calculate Percent spliced-in (Psi) scores of each junction
