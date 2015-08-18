@@ -6,7 +6,10 @@ COLUMN_NAMES = ('chrom', 'intron_start', 'intron_stop', 'strand',
                 'intron_motif', 'annotated',
                 'unique_junction_reads', 'multimap_junction_reads',
                 'max_overhang')
-
+NEG_STRAND_INTRON_MOTIF = {'CT/AC': 'GT/AG',
+                           'CT/GC': 'GC/AG',
+                           'GT/AT': 'AT/AC',
+                           'non-canonical': 'non-canonical'}
 
 def int_to_intron_motif(n):
     if n == 0:
@@ -45,7 +48,26 @@ def read_sj_out_tab(filename):
     """
     sj = pd.read_table(filename, header=None, names=COLUMN_NAMES, sep='\s+')
     sj.intron_motif = sj.intron_motif.map(int_to_intron_motif)
+
+    # Convert integer strand to symbol
+    # Use index-based replacement because it's 100x faster
+    rows = sj.strand == 1
+    sj.loc[rows, 'strand'] = '+'
+    rows = sj.strand == 2
+    sj.loc[rows, 'strand'] = '-'
+
+    # Translate negative strand intron motifs
+    rows = sj.strand == '-'
+    sj.loc[rows, 'intron_motif'] = sj.intron_motif[rows].map(
+        lambda x: NEG_STRAND_INTRON_MOTIF[x])
     sj.annotated = sj.annotated.astype(bool)
+
+    # Add intron location
+    sj['intron_location'] = sj.chrom.astype(str) + ':' \
+                            + sj.intron_start.astype(str) + '-' \
+                            + sj.intron_stop.astype(str) + ':' \
+                            + sj.strand.astype(str)
+
     return sj
 
 
