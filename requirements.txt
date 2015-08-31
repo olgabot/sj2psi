@@ -4,3 +4,4 @@ pyflakes
 pep8
 coverage
 python-coveralls
+graphlite
