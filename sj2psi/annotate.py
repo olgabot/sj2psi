@@ -8,9 +8,98 @@ from graphlite import V
 
 graph = graphlite.connect(":memory:", graphs=['upstream', 'downstream'])
 
+_db_doc = """db : gffutils.FeatureDB
+    Database of gene, transcript, and exon features. The exons must be
+    accessible by the id provided on the exon_{5,3}p_col columns. If
+    not provided, certain splice types which require information about
+    the transcript (AFE, ALE) cannot be annotated."""
+
 class Annotator(object):
 
-    def __init__(self, junction_exons, db):
+    def __init__(self, junction_exons, db=None):
+        """Annotate splicing events based on junctions and nearby exons
+
+        A one-line summary that does not use variable names or the
+        function name.
+
+        Several sentences providing an extended description. Refer to
+        variables using back-ticks, e.g. `var`.
+
+        Parameters
+        ----------
+        var1 : array_like
+            Array_like means all those objects -- lists, nested lists, etc. --
+            that can be converted to an array.  We can also refer to
+            variables like `var1`.
+        db : gffutils.FeatureDB
+            Database of gene, transcript, and exon features. The exons must be
+            accessible by the id provided on the exon_{5,3}p_col columns. If
+            not provided, certain splice types which require information about
+            the transcript (AFE, ALE) cannot be annotated.
+
+        Returns
+        -------
+        type
+            Explanation of anonymous return value of type ``type``.
+        describe : type
+            Explanation of return value named `describe`.
+        out : type
+            Explanation of `out`.
+
+        Other Parameters
+        ----------------
+        only_seldom_used_keywords : type
+            Explanation
+        common_parameters_listed_above : type
+            Explanation
+
+        Raises
+        ------
+        BadException
+            Because you shouldn't have done that.
+
+        See Also
+        --------
+        otherfunc : relationship (optional)
+        newfunc : Relationship (optional), which could be fairly long, in which
+                  case the line wraps here.
+        thirdfunc, fourthfunc, fifthfunc
+
+        Notes
+        -----
+        Notes about the implementation algorithm (if needed).
+
+        This can have multiple paragraphs.
+
+        You may include some math:
+
+        .. math:: X(e^{j\omega } ) = x(n)e^{ - j\omega n}
+
+        And even use a greek symbol like :math:`omega` inline.
+
+        References
+        ----------
+        Cite the relevant literature, e.g. [1]_.  You may also cite these
+        references in the notes section above.
+
+        .. [1] O. McNoleg, "The integration of GIS, remote sensing,
+           expert systems and adaptive co-kriging for environmental habitat
+           modelling of the Highland Haggis using object-oriented, fuzzy-logic
+           and neural-network techniques," Computers & Geosciences, vol. 22,
+           pp. 585-588, 1996.
+
+        Examples
+        --------
+        These are written in doctest format, and should illustrate how to
+        use the function.
+
+        >>> a=[1,2,3]
+        >>> print [x + 3 for x in a]
+        [4, 5, 6]
+        >>> print "a\n\nb"
+        a
+        b
+        """
         self.junction_exons = junction_exons
         self.db = db
 
@@ -43,7 +132,30 @@ class Annotator(object):
                 eval(eval2)
 
     @classmethod
-    def from_sj_metadata(cls, sj_metadata, db):
+    def from_sj(cls, sj_metadata, db=None):
+        """Annotates junctions with nearby exons and initializes Annotator
+
+        Parameters
+        ----------
+        var1 : array_like
+            Array_like means all those objects -- lists, nested lists, etc. --
+            that can be converted to an array.  We can also refer to
+            variables like `var1`.
+        db : gffutils.FeatureDB
+            Database of gene, transcript, and exon features. The exons must be
+            accessible by the id provided on the exon_{5,3}p_col columns. If
+            not provided, certain splice types which require information about
+            the transcript (AFE, ALE) cannot be annotated.
+
+        Returns
+        -------
+        type
+            Explanation of anonymous return value of type ``type``.
+        describe : type
+            Explanation of return value named `describe`.
+        out : type
+            Explanation of `out`.
+        """
 
         sj_metadata['exon_5p'] = ''
         sj_metadata['exon_3p'] = ''
@@ -92,57 +204,56 @@ class Annotator(object):
         sj_metadata.loc[sj_metadata.index.map(
             lambda x: x.endswith('3p')), 'exon_5p'] = np.nan
 
+    @classmethod
+    def from_sj_exons(cls, sj_exons, db=None, junction_col='junction_location',
+                      exon_5p_col='exon_5p', exon_3p_col='exon_3p'):
+        """Initialize Annotator from table with junctions and nearby exons
 
-    def _annotate_known_exons(self, sj_metadata):
+        Parameters
+        ----------
+        sj_metadata : pandas.DataFrame
+            A table with a column indicating "junction_location"
+        db : gffutils.FeatureDB
+            Database of gene, transcript, and exon features. The exons must be
+            accessible by the id provided on the exon_{5,3}p_col columns. If
+            not provided, certain splice types which require information about
+            the transcript (AFE, ALE) cannot be annotated.
+        junction_col : str
+            Column name of the raw junction location (without |5p or |3p
+            annotated)
+        exon_5p_col : str
+            Column name where exons upstream of the junction are stored
+        exon_3p_col : str
+            Column name where exons downstream of the junction are stored
+
+        Returns
+        -------
+        junction_exons
+            A three-column table of junction_location, exon, and direction
+
         """
-
-        :param sj_metadata:
-        :type sj_metadata:
-        :return:
-        :rtype:
-        """
-        sj_metadata['exon_5p'] = ''
-        sj_metadata['exon_3p'] = ''
-
-        sys.stdout.write('Starting annotation of all junctions with known '
-                         'exons...\n')
-        for i, exon in enumerate(self.db.features_of_type('exon')):
-            if (i + 1) % 10000 == 0:
-                sys.stdout.write('\t{}/{}\n'.format(i + 1, n_exons))
-            chrom_ind = sj_metadata.chrom == exon.chrom
-            strand_ind = sj_metadata.strand == exon.strand
-            upstream_ind = chrom_ind & strand_ind & (
-            sj_metadata.exon_stop == exon.stop)
-            downstream_ind = chrom_ind & strand_ind & (
-            sj_metadata.exon_start == exon.start)
-
-            exon_id = exon.id
-            if upstream_ind.any():
-                if exon.strand == '+':
-                    sj_metadata.loc[upstream_ind, 'exon_5p'] = sj_metadata.loc[
-                                                                   upstream_ind, 'exon_5p'] + ',' + exon_id
-                else:
-                    sj_metadata.loc[upstream_ind, 'exon_3p'] = sj_metadata.loc[
-                                                                   upstream_ind, 'exon_3p'] + ',' + exon_id
-
-            if downstream_ind.any():
-                if exon.strand == '+':
-                    sj_metadata.loc[downstream_ind, 'exon_3p'] = \
-                    sj_metadata.loc[downstream_ind, 'exon_3p'] + ',' + exon_id
-                else:
-                    sj_metadata.loc[downstream_ind, 'exon_5p'] = \
-                    sj_metadata.loc[downstream_ind, 'exon_5p'] + ',' + exon_id
-        sys.stdout.write('Done.\n')
+        junction_exons = cls.make_junction_exon_table(
+            sj_exons, junction_col=junction_col, exon_5p_col=exon_5p_col,
+            exon_3p_col=exon_3p_col)
+        return cls(sj_exons)
 
     @staticmethod
-    def _make_junction_exon_table(sj_metadata,
-                                  junction_col="junction_location"):
+    def make_junction_exon_table(sj_exons, junction_col='junction_location',
+                                  exon_5p_col='exon_5p',
+                                  exon_3p_col='exon_3p'):
         """Create tidy table of exons upstream and downstream of a junction
 
         Parameters
         ----------
         sj_metadata : pandas.DataFrame
             A table with a column indicating "junction_location"
+        junction_col : str
+            Column name of the raw junction location (without |5p or |3p
+            annotated)
+        exon_5p_col : str
+            Column name where exons upstream of the junction are stored
+        exon_3p_col : str
+            Column name where exons downstream of the junction are stored
 
         Returns
         -------
@@ -158,11 +269,12 @@ class Annotator(object):
                      'exon:chr1:300-400:+'],
          'exon_3p':['exon:chr1:300-400:+',
          'exon:chr1:500-600:+,exon:chr1:500-650:+']})
-        >>> Annotator._make_junction_exon_table(sj_metadata)
+        >>> Annotator.make_junction_exon_table(sj_metadata)
 
         """
-        grouped = sj_metadata.groupby(junction_col)
-        direction_to_exon = {'upstream': 'exon_5p', 'downstream': 'exon_3p'}
+        grouped = sj_exons.groupby(junction_col)
+        direction_to_exon = {'upstream': exon_5p_col,
+                             'downstream': exon_3p_col}
         dfs = []
         for direction, exon in direction_to_exon.items():
             df = grouped.apply(
