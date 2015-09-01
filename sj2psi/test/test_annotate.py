@@ -1,6 +1,91 @@
 from graphlite import connect, V
+import numpy as np
 import pandas as pd
+import pandas.util.testing as pdt
 import pytest
+
+@pytest.fixture
+def sj_exons():
+    data = {'junction_location': ['chr1:76-299:+',  # Exon1alt-Exon2 junction
+                                  'chr1:201-299:+',  # Exon1-Exon2 junction
+                                  'chr1:201-249:+',  # Exon1-Exon2a3ss junction
+                                  'chr1:201-499:+',  # Exon1-Exon3 junction
+                                  'chr1:201-799:+',  # Exon1-Exon4 junction
+                                  'chr1:401-499:+',  # Exon2-Exon3 junction
+                                  'chr1:451-499:+',  # Exon2a5ss-Exon3 junction
+                                  'chr1:401-699:+',  # Exon2-Exon4 junction
+                                  'chr1:401-699:+',  # Exon3-Exon4 junction
+                                  'chr1:401-849:+'],  # Exon3-Exon4alt junction
+            # Upstream exon
+            'exon_5p': ['exon:chr1:50-75:+',  # Exon1alt-Exon2 junction
+                        'exon:chr1:100-200:+',  # Exon1-Exon2 junction
+                        'exon:chr1:100-200:+',  # Exon1-Exon2a3ss junction
+                        'exon:chr1:100-200:+',  # Exon1-Exon3 junction
+                        'exon:chr1:100-200:+',  # Exon1-Exon4 junction
+                        'exon:chr1:300-400:+,exon:chr1:250-400:+',
+                        # Exon2-Exon3 junction
+                        'exon:chr1:300-450:+',  # Exon2a5ss-Exon3 junction
+                        'exon:chr1:300-400:+,exon:chr1:250-400:+',
+                        # Exon2-Exon4 junction
+                        'exon:chr1:500-600:+',  # Exon3-Exon4 junction
+                        'exon:chr1:500-600:+'  # Exon3-Exon4alt junction
+                        ],
+            # Downstream exon
+            'exon_3p': ['exon:chr1:300-400:+,exon:chr1:300-450:+',
+
+                        'exon:chr1:300-400:+,exon:chr1:300-450:+',  #
+                        'exon:chr1:250-400:+',  # Exon1-Exon2a3ss junction
+                        'exon:chr1:500-600:+',  # Exon1-Exon3 junction
+                        'exon:chr1:700-800:+',  # Exon1-Exon4 junction
+                        'exon:chr1:500-600:+',  # Exon2-Exon3 junction
+                        'exon:chr1:500-600:+',  # Exon2a5ss-Exon3 junction
+                        'exon:chr1:500-600:+',  # Exon2-Exon4 junction
+                        'exon:chr1:500-600:+',  # Exon3-Exon4 junction
+                        'exon:chr1:850-900:+',  # Exon3-Exon4alt junction
+                        ]
+            }
+
+
+    df = pd.DataFrame(data)
+    return df
+
+class TestAnnotator(object):
+
+    @pytest.fixture
+    def junction_exons(self, sj_exons):
+        from sj2psi.annotate import Annotator
+        return Annotator.make_junction_exon_table(sj_exons)
+
+    @pytest.fixture
+    def annotator(self, junction_exons):
+        from sj2psi.annotate import Annotator
+        return Annotator(junction_exons)
+
+    def test_init(self, junction_exons):
+        from sj2psi.annotate import Annotator
+
+        test = Annotator(junction_exons)
+        pdt.assert_frame_equal(test.junction_exons, junction_exons)
+        assert test.db is None
+        all_exons = junction_exons.exon.unique()
+        all_junctions = junction_exons.junction_location.unique()
+        items = np.concatenate([all_exons, all_junctions])
+        int_to_item = pd.Series(items)
+        item_to_int = pd.Series(dict((v, k) for k, v in
+                                     int_to_item.iteritems()))
+
+        pdt.assert_array_equal(test.all_exons, all_exons)
+        pdt.assert_array_equal(test.all_junctions, all_junctions)
+        pdt.assert_array_equal(test.items, items)
+        pdt.assert_dict_equal(test.int_to_item, item_to_int)
+        pdt.assert_dict_equal(test.item_to_int, item_to_int)
+
+    def test_from_sj_exons(self, sj_exons, annotator):
+        from sj2psi.annotate import Annotator
+
+        test = Annotator.from_sj_exons(sj_exons)
+
+
 
 @pytest.fixture
 def graph():
