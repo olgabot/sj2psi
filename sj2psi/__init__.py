@@ -64,9 +64,9 @@ def read_sj_out_tab(filename):
 
     # Add intron location
     sj['intron_location'] = sj.chrom.astype(str) + ':' \
-                            + sj.intron_start.astype(str) + '-' \
-                            + sj.intron_stop.astype(str) + ':' \
-                            + sj.strand.astype(str)
+        + sj.intron_start.astype(str) + '-' \
+        + sj.intron_stop.astype(str) + ':' \
+        + sj.strand.astype(str)
 
     return sj
 

@@ -49,7 +49,8 @@ def test_int_to_intron_motif(int_motif):
 
 
 def test_read_sj_out_tab(example_sj_out_tab):
-    from sj2psi import read_sj_out_tab, COLUMN_NAMES, int_to_intron_motif
+    from sj2psi import read_sj_out_tab, COLUMN_NAMES, int_to_intron_motif, \
+        NEG_STRAND_INTRON_MOTIF
 
     test_output = read_sj_out_tab(example_sj_out_tab)
 
@@ -57,7 +58,22 @@ def test_read_sj_out_tab(example_sj_out_tab):
                                 names=COLUMN_NAMES, sep='\s+')
     true_output.intron_motif = true_output.intron_motif.map(
         int_to_intron_motif)
+    rows = true_output.strand == 1
+    true_output.loc[rows, 'strand'] = '+'
+    rows = true_output.strand == 2
+    true_output.loc[rows, 'strand'] = '-'
+
+    # Translate negative strand intron motifs
+    rows = true_output.strand == '-'
+    true_output.loc[rows, 'intron_motif'] = true_output.intron_motif[rows].map(
+        lambda x: NEG_STRAND_INTRON_MOTIF[x])
     true_output.annotated = true_output.annotated.astype(bool)
+
+    # Add intron location
+    true_output['intron_location'] = true_output.chrom.astype(str) + ':' \
+        + true_output.intron_start.astype(str) + '-' \
+        + true_output.intron_stop.astype(str) + ':' \
+        + true_output.strand.astype(str)
 
     pdt.assert_frame_equal(test_output, true_output)
 
